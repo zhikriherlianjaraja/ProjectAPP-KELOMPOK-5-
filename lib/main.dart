@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Package for date formatting
+import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Package for local storage
 
 void main() {
   runApp(const MyApp());
@@ -68,23 +70,51 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 10),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                hintText: 'Write your note here...',
-                border: OutlineInputBorder(),
+            Expanded(
+              child: TextField(
+                controller: _noteController,
+                decoration: InputDecoration(
+                  hintText: 'Write your note here...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: null,
+                onChanged: (value) {
+                  setState(() {
+                    _currentNote = value;
+                  });
+                },
               ),
-              maxLines: null, // Allows multiple lines for longer notes
-              onChanged: (value) {
-                setState(() {
-                  _currentNote = value;
-                });
-              },
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveNote,
-              child: Text('Save Note'),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _saveNote,
+                  icon: Icon(Icons.save),
+                  label: Text('Save Note'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: _currentNote));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Note copied to clipboard'),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.copy),
+                  label: Text('Copy Note'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -92,40 +122,26 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _saveNote() {
+  void _saveNote() async {
     // Save note to local storage
-    // For simplicity, we'll use SharedPreferences here
-    // You can replace this with other local storage methods like SQLite or Hive
-    final String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    // Save note with key as formatted date
-    // Here, we're saving the note as a string
-    // In a real app, you might want to save it as a structured data (e.g., JSON)
-    // and convert it back when loading
-    // For example: _saveNoteToLocalStorage(formattedDate, {'note': _currentNote});
-    // Loading and saving to local storage is asynchronous operation, so it should be awaited
-    // You can use packages like shared_preferences or hive for local storage in Flutter
-    // Here is an example using SharedPreferences:
-    // final prefs = await SharedPreferences.getInstance();
-    // await prefs.setString(formattedDate, _currentNote);
-
-    // For now, we'll just print the note
-    print('Note saved for $_selectedDate: $_currentNote');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('note_$_selectedDate', _currentNote);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Note saved'),
+      ),
+    );
   }
 
-  void _loadNote() {
+  void _loadNote() async {
     // Load note from local storage
-    // Similar to _saveNote, you should replace this with appropriate method for your local storage
-    // For example: _loadNoteFromLocalStorage(formattedDate);
-    // Here is an example using SharedPreferences:
-    // final prefs = await SharedPreferences.getInstance();
-    // final note = prefs.getString(formattedDate);
-    // if (note != null) {
-    //   setState(() {
-    //     _currentNote = note;
-    //   });
-    // }
-
-    // For now, we'll just print the loaded note
-    print('Note loaded for $_selectedDate: $_currentNote');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? note = prefs.getString('note_$_selectedDate');
+    if (note != null) {
+      setState(() {
+        _currentNote = note;
+        _noteController.text = note;
+      });
+    }
   }
 }
