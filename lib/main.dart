@@ -17,7 +17,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Catatan KU'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => MyHomePage(title: 'Catatan KU'),
+        '/kalender': (context) => CalendarPage(),
+      },
     );
   }
 }
@@ -55,6 +59,56 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text(
+                'Catatan',
+                style: TextStyle(
+                  fontWeight: ModalRoute.of(context)?.settings.name == '/'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+              onTap: () {
+                // Close the drawer and navigate to Catatan page
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/');
+              },
+            ),
+            ListTile(
+              title: Text(
+                'Kalender',
+                style: TextStyle(
+                  fontWeight:
+                      ModalRoute.of(context)?.settings.name == '/kalender'
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                ),
+              ),
+              onTap: () {
+                // Close the drawer and navigate to Kalender page
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/kalender');
+              },
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -125,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _saveNote() async {
     // Save note to local storage
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('note_$_selectedDate', _currentNote);
+    await prefs.setString('note_${_selectedDate.toString()}', _currentNote);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Note saved'),
@@ -136,12 +190,70 @@ class _MyHomePageState extends State<MyHomePage> {
   void _loadNote() async {
     // Load note from local storage
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? note = prefs.getString('note_$_selectedDate');
+    String? note = prefs.getString('note_${_selectedDate.toString()}');
     if (note != null) {
       setState(() {
         _currentNote = note;
         _noteController.text = note;
       });
     }
+  }
+}
+
+class CalendarPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kalender'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text(
+                'Catatan',
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              onTap: () {
+                // Close the drawer and navigate back to Catatan page
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/');
+              },
+            ),
+            ListTile(
+              title: Text(
+                'Kalender',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                // Close the drawer
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Center(
+        child: Text('Ini adalah halaman Kalender'),
+      ),
+    );
   }
 }
