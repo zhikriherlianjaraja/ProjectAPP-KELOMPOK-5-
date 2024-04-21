@@ -330,14 +330,6 @@ class NoteCard extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8.0),
-            Text(
-              'Tulis catatan di sini...',
-              style: TextStyle(
-                fontSize: 14.0,
-                color: Colors.grey[600],
-              ),
-            ),
           ],
         ),
       ),
@@ -377,16 +369,13 @@ class NoteDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
-              decoration: InputDecoration(
-                labelText: 'Tulis judul catatan...',
-              ),
+              decoration: InputDecoration(),
             ),
             const SizedBox(height: 8),
             TextField(
               maxLines: null,
               expands: true,
               decoration: InputDecoration(
-                labelText: 'Tulis catatan di sini...',
                 alignLabelWithHint: true,
               ),
             ),
