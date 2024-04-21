@@ -1,62 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Package for date formatting
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aplikasi pertama',
+      title: 'Catatan KU',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme:
-            ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 255, 235, 235)),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Projeck awal'),
+      home: const MyHomePage(title: 'Catatan KU'),
     );
   }
 }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-      appBar: AppBar(
-    title: const Text('appBar Demo'),
-    actions: <Widget>[
-      IconButton(
-        icon: const Icon(Icons.add_alert),
-        tooltip: 'Show Snackbar',
-        onPressed: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('This is a Snakbar')));
-        },
-      ),
-    ],
-  ));
-}
-
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -65,40 +30,102 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late final TextEditingController _noteController;
+  late final DateTime _selectedDate;
+  String _currentNote = '';
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController();
+    _selectedDate = DateTime.now();
+    _loadNote();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              DateFormat('dd MMMM yyyy').format(_selectedDate),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _noteController,
+              decoration: InputDecoration(
+                hintText: 'Write your note here...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: null, // Allows multiple lines for longer notes
+              onChanged: (value) {
+                setState(() {
+                  _currentNote = value;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveNote,
+              child: Text('Save Note'),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  void _saveNote() {
+    // Save note to local storage
+    // For simplicity, we'll use SharedPreferences here
+    // You can replace this with other local storage methods like SQLite or Hive
+    final String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    // Save note with key as formatted date
+    // Here, we're saving the note as a string
+    // In a real app, you might want to save it as a structured data (e.g., JSON)
+    // and convert it back when loading
+    // For example: _saveNoteToLocalStorage(formattedDate, {'note': _currentNote});
+    // Loading and saving to local storage is asynchronous operation, so it should be awaited
+    // You can use packages like shared_preferences or hive for local storage in Flutter
+    // Here is an example using SharedPreferences:
+    // final prefs = await SharedPreferences.getInstance();
+    // await prefs.setString(formattedDate, _currentNote);
+
+    // For now, we'll just print the note
+    print('Note saved for $_selectedDate: $_currentNote');
+  }
+
+  void _loadNote() {
+    // Load note from local storage
+    // Similar to _saveNote, you should replace this with appropriate method for your local storage
+    // For example: _loadNoteFromLocalStorage(formattedDate);
+    // Here is an example using SharedPreferences:
+    // final prefs = await SharedPreferences.getInstance();
+    // final note = prefs.getString(formattedDate);
+    // if (note != null) {
+    //   setState(() {
+    //     _currentNote = note;
+    //   });
+    // }
+
+    // For now, we'll just print the loaded note
+    print('Note loaded for $_selectedDate: $_currentNote');
   }
 }
